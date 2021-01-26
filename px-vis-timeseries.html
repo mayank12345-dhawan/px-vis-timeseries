@@ -1659,15 +1659,11 @@ Custom property | Description
       return this.referenceData && this.referenceData.length ? true : false;
     },
     _isDigitalTag(item, completeSeriesConfig) {
-      return completeSeriesConfig[item].standardUom && (completeSeriesConfig[item].standardUom === 'Boolean' || completeSeriesConfig[item].name.startsWith('L'))
+      return completeSeriesConfig[item].isLogical;
     },
     _getYaxisRanges: function (noOfSteps) {
-      let yDomain;
-      if (this.isMultiY) {
-        yDomain = this.y.defaultAxis.domain()
-      } else {
-        yDomain = this.y.defaultAxis.domain()
-      }
+      // let yDomain;
+      const yDomain = this.y[this.axes[0]].domain();
       const lowerBound = yDomain[0];
       const upperBound = yDomain[1];
       const step = (upperBound - lowerBound) / (noOfSteps * 2);
@@ -1688,9 +1684,7 @@ Custom property | Description
       } else {
         this.debounce('updateChartData', function () {
           const boolTagIds = _.filter(_.keys(this.completeSeriesConfig), tagId => (
-              (this.completeSeriesConfig[tagId].standardUom === 'Boolean'
-              || this.completeSeriesConfig[tagId].name.startsWith('L'))
-              && !this.mutedSeries[tagId]
+              this.completeSeriesConfig[tagId].isLogical && !this.mutedSeries[tagId]
             )
           );
           const yaxisRanges = this._getYaxisRanges(boolTagIds.length);
