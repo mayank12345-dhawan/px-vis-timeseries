@@ -262,11 +262,11 @@ Custom property | Description
     <template id="lineTemplate" is="dom-repeat" items="[[_seriesKeys]]">
       <template is="dom-if" if="[[_chartTypeLine(item,completeSeriesConfig)]]" restamp>
         <template id="lineCanvasTemplate" is="dom-if" if="[[renderToCanvas]]" restamp>
-          <px-vis-line-canvas
+         <px-vis-line-canvas
             id="lineCanvas"
             canvas-context="[[canvasContext]]"
             series-id="[[item]]"
-            chart-data="[[chartData]]"
+            chart-data="[[updatedChartData]]"
             complete-series-config="[[completeSeriesConfig]]"
             x="[[x]]"
             y="[[_returnYScale(item, completeSeriesConfig, domainChanged)]]"
@@ -277,9 +277,10 @@ Custom property | Description
             height="[[height]]"
             margin="[[_internalMargin]]"
             clip-path
+            draw-digital-tags="[[_isDigitalTag(item, completeSeriesConfig)]]"
             interpolation-function="[[interpolationFunction]]"
             serie-to-redraw-on-top="[[serieToRedrawOnTop]]">
-          </px-vis-line-canvas>
+          </px-vis-line-canvas> 
         </template>
         <template id="lineSVGTemplate" is="dom-if" if="[[!renderToCanvas]]" restamp>
           <px-vis-line-svg
@@ -854,6 +855,15 @@ Custom property | Description
       _stripeDataIndex: {
         type: Number,
         value: null
+      },
+
+      updatedChartData: {
+        type: Array,
+        value: null
+      },
+      plotDigitalTags: {
+        type: Boolean,
+        value: false
       }
     },
 
@@ -883,7 +893,7 @@ Custom property | Description
       '_tooltipDataUpdated(tooltipData.*)',
 
       //renderer
-      '_renderChartData(domainChanged, canvasContext, chartData.*, mutedSeries.*, completeSeriesConfig.*, preventInitialDrawing, renderToCanvas)',
+      '_updateChartDataBeforeRender(domainChanged, canvasContext, chartData.*, mutedSeries.*, completeSeriesConfig.*, preventInitialDrawing, renderToCanvas)',
       '_renderHighlight(domainChanged, canvasLayers.highlighter, completeSeriesConfig.*, preventInitialDrawing)',
       '_renderSeriesOnTop(serieToRedrawOnTop)',
       '_renderMarkers(canvasLayers.markers, domainChanged, markerData, markerConfig, preventInitialDrawing)'
@@ -1646,6 +1656,58 @@ Custom property | Description
 
     _showRef() {
       return this.referenceData && this.referenceData.length ? true : false;
+    },
+    _isDigitalTag(item, completeSeriesConfig) {
+      return completeSeriesConfig[item].isLogical;
+    },
+    _getYaxisRanges: function (noOfSteps) {
+      // let yDomain;
+      const yDomain = this.y[this.axes[0]].domain();
+      const lowerBound = yDomain[0];
+      const upperBound = yDomain[1];
+      const step = (upperBound - lowerBound) / (noOfSteps * 2);
+      const ranges = [];
+      let i = lowerBound;
+      while (i < upperBound) {
+        const off = i + step;
+        const on = off + step;
+        ranges.push({ on, off });
+        i = on;
+      }
+      return ranges;
+    },
+    _updateChartDataBeforeRender() {
+      if (!this.plotDigitalTags) {
+        this.set('updatedChartData', this.chartData);
+        this._renderChartData();
+      } else {
+        this.debounce('updateChartData', function () {
+          const boolTagIds = _.filter(_.keys(this.completeSeriesConfig), tagId => (
+              this.completeSeriesConfig[tagId].isLogical && !this.mutedSeries[tagId]
+            )
+          );
+          const yaxisRanges = this._getYaxisRanges(boolTagIds.length);
+          let visChartData = _.cloneDeep(this.chartData);
+          _.forEach(boolTagIds, (boolTagId, idx) => {
+            const t1Off = yaxisRanges[idx].off;
+            const t1On = yaxisRanges[idx].on;
+            visChartData = visChartData.map((item, idx1) => {
+              if (item[boolTagId] == undefined || item[boolTagId] == null) {
+                // empty: data
+                return item;
+              } else if (item[boolTagId] != 0) {
+                // on: data
+                return { ...item, [boolTagId]: t1On };
+              }
+              // off: data
+              return { ...item, [boolTagId]: t1Off };
+            });
+          });
+          this.set('updatedChartData', visChartData);
+          this._renderChartData();
+
+        }.bind(this), 100);
+      }
     }
   });
 </script>
