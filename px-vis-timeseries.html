@@ -1667,7 +1667,7 @@ Custom property | Description
       const upperBound = yDomain[1];
       const step = (upperBound - lowerBound) / (noOfSteps * 2);
       const ranges = [];
-      let i = lowerBound;
+      let i = lowerBound - (step * 0.5);
       while (i < upperBound) {
         const off = i + step;
         const on = off + step;
@@ -1695,12 +1695,8 @@ Custom property | Description
               if (item[boolTagId] == undefined || item[boolTagId] == null) {
                 // empty: data
                 return item;
-              } else if (item[boolTagId] != 0) {
-                // on: data
-                return { ...item, [boolTagId]: t1On };
               }
-              // off: data
-              return { ...item, [boolTagId]: t1Off };
+              return {...item, [boolTagId]: ( (t1On - t1Off) * item[boolTagId] ) + t1Off }
             });
           });
           this.set('updatedChartData', visChartData);
