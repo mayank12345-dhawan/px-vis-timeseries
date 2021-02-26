@@ -453,6 +453,7 @@ Custom property | Description
       series-keys="[[_seriesKeys]]"
       complete-series-config="[[completeSeriesConfig]]"
       chart-data="[[chartData]]"
+      rendered-chart-data="[[updatedChartData]]"
       chart-id="[[chartId]]"
       x="[[x]]"
       y="[[y]]"
@@ -1701,26 +1702,22 @@ Custom property | Description
           });
           this.set('updatedChartData', visChartData);
           this._renderChartData();
-
         }.bind(this), 100);
       }
     },
-    _keepUpdatedDataInSync: function() {
-      if(this.hasUndefinedArguments(arguments)) {
+    _keepUpdatedDataInSync: function () {
+      if (this.hasUndefinedArguments(arguments)) {
         return;
       }
-      this.debounce('updateChartData', function () {
-        if(!this.preventWebWorkerSynchronization && this[this._wwSyncDataPropName]) {
-          this._wwSyncDataDeleted = false;
-          Px.vis.scheduler.process({
-              'action': 'updateRenderedData',
-              'originatorName': this.nodeName,
-              'chartId': this.chartId,
-              'data': {'chartData': this['updatedChartData']}});
-          // this.set('wwDataSyncCounter', this.wwDataSyncCounter ? this.wwDataSyncCounter+1 : 1);
-        }
-      }, 100);
-      
+      if (!this.preventWebWorkerSynchronization && this[this._wwSyncDataPropName]) {
+        this._wwSyncDataDeleted = false;
+        Px.vis.scheduler.process({
+          'action': 'updateRenderedData',
+          'originatorName': this.nodeName,
+          'chartId': this.chartId,
+          'data': { 'chartData': this['updatedChartData'] }
+        });
+      }
     }
   });
 </script>
