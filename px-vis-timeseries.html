@@ -454,6 +454,7 @@ Custom property | Description
       complete-series-config="[[completeSeriesConfig]]"
       chart-data="[[chartData]]"
       rendered-chart-data="[[updatedChartData]]"
+      plot-digital-tags="[[plotDigitalTags]]"
       chart-id="[[chartId]]"
       x="[[x]]"
       y="[[y]]"
@@ -890,7 +891,6 @@ Custom property | Description
       '_navSelectedDomainChanged(_navSelectedDomain)',
       '_langChanged(language)',
       '_keepDataInSync(chartData.*, chartId)',
-      '_keepUpdatedDataInSync(updatedChartData.*, chartId)',
       '_mutedChanged(mutedSeries.*, hardMute)',
       '_tooltipDataUpdated(tooltipData.*)',
 
@@ -1702,13 +1702,11 @@ Custom property | Description
           });
           this.set('updatedChartData', visChartData);
           this._renderChartData();
+          this._keepUpdatedDataInSync();
         }.bind(this), 100);
       }
     },
     _keepUpdatedDataInSync: function () {
-      if (this.hasUndefinedArguments(arguments)) {
-        return;
-      }
       if (!this.preventWebWorkerSynchronization && this[this._wwSyncDataPropName]) {
         this._wwSyncDataDeleted = false;
         Px.vis.scheduler.process({
