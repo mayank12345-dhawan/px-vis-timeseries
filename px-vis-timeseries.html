@@ -508,7 +508,7 @@ Custom property | Description
         time-data="[[_getXKey(completeSeriesConfig)]]"
         complete-series-config="[[completeSeriesConfig]]"
         series-keys="[[_seriesKeys]]"
-        chart-data="[[chartData]]"
+        chart-data="[[updatedChartData]]"
         generating-crosshair-data="[[generatingCrosshairData]]"
         crosshair-data="[[crosshairData]]"
         default-empty-data="{{defaultEmptyData}}"
@@ -889,6 +889,7 @@ Custom property | Description
       '_navSelectedDomainChanged(_navSelectedDomain)',
       '_langChanged(language)',
       '_keepDataInSync(chartData.*, chartId)',
+      '_keepUpdatedDataInSync(updatedChartData.*, chartId)',
       '_mutedChanged(mutedSeries.*, hardMute)',
       '_tooltipDataUpdated(tooltipData.*)',
 
@@ -1693,7 +1694,6 @@ Custom property | Description
             const t1On = yaxisRanges[idx].on;
             visChartData = visChartData.map((item, idx1) => {
               if (item[boolTagId] == undefined || item[boolTagId] == null) {
-                // empty: data
                 return item;
               }
               return {...item, [boolTagId]: ( (t1On - t1Off) * item[boolTagId] ) + t1Off }
@@ -1704,6 +1704,23 @@ Custom property | Description
 
         }.bind(this), 100);
       }
+    },
+    _keepUpdatedDataInSync: function() {
+      if(this.hasUndefinedArguments(arguments)) {
+        return;
+      }
+      this.debounce('updateChartData', function () {
+        if(!this.preventWebWorkerSynchronization && this[this._wwSyncDataPropName]) {
+          this._wwSyncDataDeleted = false;
+          Px.vis.scheduler.process({
+              'action': 'updateRenderedData',
+              'originatorName': this.nodeName,
+              'chartId': this.chartId,
+              'data': {'chartData': this['updatedChartData']}});
+          // this.set('wwDataSyncCounter', this.wwDataSyncCounter ? this.wwDataSyncCounter+1 : 1);
+        }
+      }, 100);
+      
     }
   });
 </script>
