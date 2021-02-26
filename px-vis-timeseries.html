@@ -453,6 +453,8 @@ Custom property | Description
       series-keys="[[_seriesKeys]]"
       complete-series-config="[[completeSeriesConfig]]"
       chart-data="[[chartData]]"
+      rendered-chart-data="[[updatedChartData]]"
+      plot-digital-tags="[[plotDigitalTags]]"
       chart-id="[[chartId]]"
       x="[[x]]"
       y="[[y]]"
@@ -508,7 +510,7 @@ Custom property | Description
         time-data="[[_getXKey(completeSeriesConfig)]]"
         complete-series-config="[[completeSeriesConfig]]"
         series-keys="[[_seriesKeys]]"
-        chart-data="[[chartData]]"
+        chart-data="[[updatedChartData]]"
         generating-crosshair-data="[[generatingCrosshairData]]"
         crosshair-data="[[crosshairData]]"
         default-empty-data="{{defaultEmptyData}}"
@@ -1693,7 +1695,6 @@ Custom property | Description
             const t1On = yaxisRanges[idx].on;
             visChartData = visChartData.map((item, idx1) => {
               if (item[boolTagId] == undefined || item[boolTagId] == null) {
-                // empty: data
                 return item;
               }
               return {...item, [boolTagId]: ( (t1On - t1Off) * item[boolTagId] ) + t1Off }
@@ -1701,8 +1702,19 @@ Custom property | Description
           });
           this.set('updatedChartData', visChartData);
           this._renderChartData();
-
+          this._keepUpdatedDataInSync();
         }.bind(this), 100);
+      }
+    },
+    _keepUpdatedDataInSync: function () {
+      if (!this.preventWebWorkerSynchronization && this[this._wwSyncDataPropName]) {
+        this._wwSyncDataDeleted = false;
+        Px.vis.scheduler.process({
+          'action': 'updateRenderedData',
+          'originatorName': this.nodeName,
+          'chartId': this.chartId,
+          'data': { 'chartData': this['updatedChartData'] }
+        });
       }
     }
   });
