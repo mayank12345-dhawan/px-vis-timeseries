@@ -866,6 +866,10 @@ Custom property | Description
       plotDigitalTags: {
         type: Boolean,
         value: false
+      },
+      dynamicMarkerSetting: {
+        type: Boolean,
+        value: false
       }
     },
 
@@ -1115,7 +1119,11 @@ Custom property | Description
 
       //account for X axis
       if(this.xAxisLocation === 'bottom') {
-        newMarg.bottom -= 40;
+        if (!this.dynamicMarkerSetting) {
+          newMarg.bottom -= 40;
+        } else {
+          newMarg.bottom -= 20;
+        }
       } else if(this.xAxisLocation === 'top') {
         newMarg.top -= 40;
       }
