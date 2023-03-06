@@ -165,7 +165,8 @@ Custom property | Description
             inert-register="[[hideRegister]]"
             current-page="[[_registerCurrentPage]]"
             total-pages="[[_registerTotalPages]]"
-            display-page-arrows="[[_registerDisplayPageArrows]]">
+            display-page-arrows="[[_registerDisplayPageArrows]]"
+            decimal-format="[[decimalFormat]]">
           </px-vis-register>
 
           <!-- chart + navigator -->
@@ -248,7 +249,8 @@ Custom property | Description
       tooltip-top-position-mode=[[tooltipTopPositionMode]]
       muted-series="[[mutedSeries]]"
       hide="[[!_computedShowTooltip]]"
-      series-keys="[[_seriesKeys]]">
+      series-keys="[[_seriesKeys]]"
+      decimal-format="[[decimalFormat]]">
     </px-vis-tooltip>
 
     <px-vis-clip-path
@@ -478,7 +480,8 @@ Custom property | Description
       time-data="[[_getXKey(completeSeriesConfig)]]"
       prevent-web-worker-synchronization="[[preventWebWorkerSynchronization]]"
       ww-data-sync-counter="[[wwDataSyncCounter]]"
-      log-base="[[logBase]]">
+      log-base="[[logBase]]"
+      decimal-format="[[decimalFormat]]">
     </px-vis-interaction-space>
 
     <px-vis-cursor
